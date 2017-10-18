@@ -5,9 +5,9 @@ import logging
 import warnings
 
 from django.conf import settings
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
-from django.core.urlresolvers import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
+from django.core.urlresolvers import NoReverseMatch, reverse_lazy, Resolver404, get_script_prefix
 from django.core.signals import got_request_exception
 from django.db import transaction
 from django.db.models.constants import LOOKUP_SEP
@@ -294,7 +294,7 @@ class Resource(six.with_metaclass(DeclarativeMetaclass)):
 
         See ``NamespacedModelResource._build_reverse_url`` for an example.
         """
-        return reverse(name, args=args, kwargs=kwargs)
+        return reverse_lazy(name, args=args, kwargs=kwargs)
 
     def base_urls(self):
         """
@@ -336,9 +336,7 @@ class Resource(six.with_metaclass(DeclarativeMetaclass)):
             urls += overridden_urls
 
         urls += self.base_urls()
-        urlpatterns = patterns('',
-            *urls
-        )
+        urlpatterns = urls
         return urlpatterns
 
     def determine_format(self, request):
@@ -2423,7 +2421,7 @@ class NamespacedModelResource(ModelResource):
     """
     def _build_reverse_url(self, name, args=None, kwargs=None):
         namespaced = "%s:%s" % (self._meta.urlconf_namespace, name)
-        return reverse(namespaced, args=args, kwargs=kwargs)
+        return reverse_lazy(namespaced, args=args, kwargs=kwargs)
 
 
 # Based off of ``piston.utils.coerce_put_post``. Similarly BSD-licensed.
